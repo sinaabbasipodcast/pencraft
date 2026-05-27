@@ -81,7 +81,7 @@ KEYWORDS_BANK = [
 
 PARAPHRASE_BANK = [
     {"q": "I decided to leave early because I wasn’t feeling well.", "opts": ["Due to my illness, I chose to depart ahead of schedule.", "I left soon because I am sick.", "Early leaving was my choice for bad feeling.", "I feel bad so I go early."], "ans": "Due to my illness, I chose to depart ahead of schedule.", "exp": "استفاده از Due to و depart ahead of schedule سطح پارافریز را به آکادمیک نزدیک می‌کند."},
-    {"q": "We need to finish this project before the end of the week.", "opts": ["The project must be completed by the weekend.", "We should end this stuff soon.", "End this project before Friday is needed.", "Project finishing is required now."], "ans": "The project mus be completed by the weekend.", "exp": "تغییر ساختار به مجهول (Passive) یکی از تکنیک‌های اصلی پارافریز در آیلتس است."},
+    {"q": "We need to finish this project before the end of the week.", "opts": ["The project must be completed by the weekend.", "We should end this stuff soon.", "End this project before Friday is needed.", "Project finishing is required now."], "ans": "The project must be completed by the weekend.", "exp": "تغییر ساختار به مجهول (Passive) یکی از تکنیک‌های اصلی پارافریز در آیلتس است."},
 ]
 
 # --- STATE MANAGEMENT ---
@@ -96,4 +96,58 @@ def navigate(to):
     st.session_state.feedback = None
 
 # --- UI LOGIC ---
-if st.session_state.page ==
+if st.session_state.page == "lobby":
+    st.markdown("<h1 style='text-align:center; font-family:Orbitron; letter-spacing:8px; color:#00d4ff;'>PENCRAFT</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#666; margin-bottom:50px;'>IELTS WRITING MASTERY SYSTEM</p>", unsafe_allow_html=True)
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("🔍 PARAPHRASE PRO"): navigate("paraphrase"); st.rerun()
+    with c2:
+        if st.button("💎 KEY WORDS"): navigate("keywords"); st.rerun()
+
+else:
+    # Game Header
+    st.markdown(f"""<div class="status-bar"><div class="stat-text">MISSION: {st.session_state.page.upper()}</div><div class="stat-text">🏆 SCORE: {st.session_state.score}</div></div>""", unsafe_allow_html=True)
+    
+    bank = KEYWORDS_BANK if st.session_state.page == "keywords" else PARAPHRASE_BANK
+    
+    if st.session_state.q_idx < len(bank):
+        data = bank[st.session_state.q_idx]
+        
+        # Question Card
+        st.markdown(f"""
+        <div class="q-card">
+            <div class="q-context">{data.get('ctx', 'Paraphrase the sentence below:')}</div>
+            <div class="q-main-text">{data['q']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 2x2 Layout
+        col_top1, col_top2 = st.columns(2)
+        col_bot1, col_bot2 = st.columns(2)
+        cols = [col_top1, col_top2, col_bot1, col_bot2]
+        
+        for i, opt in enumerate(data['opts']):
+            if cols[i].button(opt, key=f"opt_{i}"):
+                if opt == data['ans']:
+                    st.session_state.feedback = ("correct", data['exp'])
+                    st.session_state.score += 10
+                else:
+                    st.session_state.feedback = ("wrong", data['exp'])
+        
+        if st.session_state.feedback:
+            res, exp = st.session_state.feedback
+            if res == "correct": st.success("🎯 EXCELLENT!")
+            else: st.error(f"❌ WRONG. Correct: {data['ans']}")
+            st.markdown(f"<div class='analysis-panel'><b>Expert Analysis:</b><br>{exp}</div>", unsafe_allow_html=True)
+            if st.button("NEXT MISSION ➡️"):
+                st.session_state.q_idx += 1
+                st.session_state.feedback = None
+                st.rerun()
+    else:
+        st.balloons()
+        st.success("All missions completed!")
+        if st.button("Back to Lobby"): navigate("lobby"); st.rerun()
+
+    if st.button("⬅️ ABORT MISSION"): navigate("lobby"); st.rerun()
