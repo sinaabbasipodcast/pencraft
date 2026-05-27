@@ -1,335 +1,218 @@
 import streamlit as st
-import random
+import time
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="Pencraft: Writing Mastery", layout="wide", page_icon="✍️")
+st.set_page_config(page_title="Pencraft Universe", layout="wide", page_icon="🚀")
 
-# --- CUSTOM CSS FOR MODERN & BOLD UI ---
+# --- ADVANCED COSMIC UI (CSS) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-    
-    html, body, [class*="css"] {
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;700&display=swap');
+
+    /* Global Cosmic Background */
+    .stApp {
+        background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+        color: #ffffff;
         font-family: 'Inter', sans-serif;
     }
 
-    .main {
-        background-color: #f8f9fa;
+    /* Status Bar (Header) */
+    .status-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 30px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
     }
+    .status-item { font-family: 'Orbitron', sans-serif; color: #00d4ff; font-weight: bold; }
 
-    /* Card Style */
-    .game-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        margin-bottom: 2rem;
-    }
-
-    /* Highlight Key Words */
-    .highlight {
-        color: #d4af37;
+    /* Lobby Hero Section */
+    .hero-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 4rem;
         font-weight: 900;
-        text-decoration: underline;
-    }
-    
-    .informal-highlight {
-        background-color: #ffe5e5;
-        color: #d90429;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: bold;
+        text-align: center;
+        background: linear-gradient(to right, #00d4ff, #0055ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 5px;
     }
 
-    /* Buttons Customization */
+    /* Game Selection Cards (Lobby) */
+    .lobby-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        transition: all 0.4s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    .lobby-card:hover {
+        transform: translateY(-10px);
+        background: rgba(0, 212, 255, 0.1);
+        border-color: #00d4ff;
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+    }
+
+    /* Metallic Game Question Card (Reflecting User Image) */
+    .q-card {
+        background: linear-gradient(135deg, #2c3e50, #000000);
+        border: 4px solid #d4af37;
+        border-radius: 25px;
+        padding: 50px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(212, 175, 55, 0.2);
+        margin: 20px auto;
+        max-width: 800px;
+    }
+    .q-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.5rem;
+        color: #ffffff;
+        margin-bottom: 20px;
+        text-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* Metallic Choice Buttons */
     .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        height: 3em;
-        background-color: #1e1e1e;
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s;
-        border: none;
+        background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+        color: #000 !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 1.1rem;
+        border-radius: 15px;
+        border: 2px solid #555;
+        height: 100px;
+        box-shadow: 0 8px 0 #666, 0 15px 20px rgba(0,0,0,0.5);
+        transition: all 0.1s;
+        white-space: normal;
     }
-    
+    .stButton>button:active {
+        box-shadow: 0 2px 0 #666;
+        transform: translateY(6px);
+    }
     .stButton>button:hover {
-        background-color: #d4af37;
-        color: black;
-        transform: translateY(-2px);
+        filter: brightness(1.2);
+        border-color: #fff;
     }
 
-    /* Badges */
-    .skill-badge {
-        background-color: #e9ecef;
-        color: #495057;
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        margin-bottom: 1rem;
-        display: inline-block;
+    /* Analysis Box */
+    .analysis-panel {
+        background: rgba(0, 0, 0, 0.6);
+        border-right: 5px solid #00d4ff;
+        padding: 20px;
+        border-radius: 10px;
+        direction: rtl;
+        font-size: 1.1rem;
+        line-height: 1.8;
     }
 
-    /* Feedback Boxes */
-    .feedback-correct {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-    }
-    
-    .feedback-wrong {
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-    }
-    
-    .analysis-box {
-        background-color: #fff9db;
-        border-left: 5px solid #fab005;
-        padding: 1rem;
-        margin-top: 1rem;
-        font-size: 0.95rem;
-        color: #444;
-        line-height: 1.6;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- DATABASES ---
+# --- SESSION STATE ---
+if 'page' not in st.session_state: st.session_state.page = "lobby"
+if 'xp' not in st.session_state: st.session_state.xp = 0
+if 'score' not in st.session_state: st.session_state.score = 0
+if 'q_idx' not in st.session_state: st.session_state.q_idx = 0
+if 'feedback' not in st.session_state: st.session_state.feedback = None
 
-# 1. Paraphrase Database
-paraphrase_db = [
-    {
-        "original": "The government needs to spend more money on schools to help students learn better.",
-        "options": [
-            "Allocating more resources to education is essential for improving student outcomes.",
-            "Increased investment in the educational sector is vital to enhance the learning process.",
-            "Expanding the education budget is necessary to foster better academic achievement."
-        ],
-        "analysis": "در اینجا عبارت 'spend more money' به 'allocating resources' یا 'investment' تغییر یافته که رسمی‌تر است. همچنین 'help students learn better' به 'enhance the learning process' یا 'foster academic achievement' تبدیل شده که عمق تحلیل آکادمیک متن شما را بالا می‌برد."
-    },
-    {
-        "original": "People are using cars too much, and this is bad for the air in our cities.",
-        "options": [
-            "The excessive reliance on private vehicles significantly contributes to urban air pollution.",
-            "Over-dependence on automobiles is detrimental to the air quality in metropolitan areas.",
-            "The heavy use of personal transport has a negative impact on the atmospheric conditions of cities."
-        ],
-        "analysis": "کلمه 'bad' یک کلمه ضعیف است که در اینجا با 'detrimental' یا 'negative impact' جایگزین شده. همچنین 'using cars too much' به عبارتی دقیق‌تر مثل 'excessive reliance' تبدیل شده است."
-    }
-]
-
-# 2. Key Words (Collocation) Database (As provided by user)
-keywords_db = [
-    {"keyword": "Education", "context": "Academic Achievement", "sentence": "A high standard of education is _______ for a country's economic success.", "options": ["vital", "big", "fast", "heavy"], "answer": "vital", "explanation": "In academic writing, 'vital' or 'essential' are strong collocations for education's importance.", "tag": "Collocation"},
-    {"keyword": "Policy", "context": "Government Actions", "sentence": "The government decided to _______ a new policy to tackle unemployment.", "options": ["make", "introduce", "do", "give"], "answer": "introduce", "explanation": "We 'introduce' or 'implement' a policy, we don't just 'make' it.", "tag": "Register"},
-    {"keyword": "Research", "context": "Evidence", "sentence": "Recent research _______ that social media can affect mental health.", "options": ["tells", "suggests", "speaks", "shows up"], "answer": "suggests", "explanation": "'Research suggests' is a classic academic collocation.", "tag": "Precision"}
-]
-
-# 3. Formal Upgrade Database
-formal_upgrade_db = [
-    {"sentence": "Many young people are <span class='informal-highlight'>crazy about</span> social media.", "highlight": "crazy about", "options": ["mad for", "highly interested in", "obsessed on", "into very much"], "answer": "highly interested in", "explanation": "Highly interested in is more formal and suitable for academic writing.", "tag": "Register"},
-    {"sentence": "The government needs to <span class='informal-highlight'>deal with</span> this issue quickly.", "highlight": "deal with", "options": ["handle", "do with", "work against", "react on"], "answer": "handle", "explanation": "Handle is more formal and concise than the phrasal verb 'deal with'.", "tag": "Academic Tone"},
-    {"sentence": "Fast food is <span class='informal-highlight'>bad for</span> people's health.", "highlight": "bad for", "options": ["not nice to", "harmful to", "rough on", "weak for"], "answer": "harmful to", "explanation": "Harmful to is a precise academic term for negative effects.", "tag": "Precision"}
-]
-
-# 4. Error Hunt Database
-error_hunt_db = [
-    {"original": "The government should do stricter laws to reduce air pollution.", "options": ["The government should do stricter laws", "The government should make stricter laws", "The government should introduce stricter laws", "The government should create up stricter laws"], "answer": "The government should introduce stricter laws", "explanation": "In formal writing, 'introduce' or 'enact' laws is the correct collocation.", "tag": "Collocation"},
-    {"original": "Education is a essential part of modern society.", "options": ["Education is a essential part", "Education is an essential part", "Education is essential part", "Education is the essential part"], "answer": "Education is an essential part", "explanation": "The word 'essential' starts with a vowel sound, so it requires the article 'an'.", "tag": "Grammar"}
-]
-
-# 5. Micro Expand Database
-micro_expand_db = [
-    {"base": "Public transport should be improved.", "task": "Add a clear reason.", "options": ["This is a topic many people talk about.", "This is necessary because it can reduce traffic congestion and air pollution.", "Public transport is a thing in cities.", "There are buses and trains in many countries."], "answer": "This is necessary because it can reduce traffic congestion and air pollution.", "explanation": "This option provides a logical and academically relevant reason.", "tag": "Logic & Cohesion"},
-    {"base": "Online learning can be effective.", "task": "Add a specific example.", "options": ["For example, many university students can attend recorded lectures at flexible times.", "For example, learning is important for students.", "For example, education exists in many forms.", "For example, some people study and some do not."], "answer": "For example, many university students can attend recorded lectures at flexible times.", "explanation": "A good example must be specific and directly support the main idea.", "tag": "Development"}
-]
-
-# --- SESSION STATE MANAGEMENT ---
-if 'game_index' not in st.session_state:
-    st.session_state.game_index = 0
-if 'feedback' not in st.session_state:
+def go_to_game(game_name):
+    st.session_state.page = game_name
+    st.session_state.q_idx = 0
     st.session_state.feedback = None
-if 'show_analysis' not in st.session_state:
-    st.session_state.show_analysis = False
 
-def next_question():
-    st.session_state.game_index += 1
-    st.session_state.feedback = None
-    st.session_state.show_analysis = False
+def back_to_lobby():
+    st.session_state.page = "lobby"
 
-# --- SIDEBAR NAVIGATION ---
-with st.sidebar:
-    st.title("🖋️ Pencraft Mastery")
-    game_choice = st.radio("Select a Game:", 
-                           ["Paraphrase Pro", "Key Words for Fluency", "Formal Upgrade", "Error Hunt", "Micro Expand"])
-    st.info("Level: Upper-Intermediate / IELTS")
-    if st.button("Reset Game"):
-        st.session_state.game_index = 0
+# --- MOCK DATA ---
+keywords_data = [
+    {"q": "mobile home", "opts": ["a large caravan which stays in one place", "a river boat you live in", "a set of rooms in a building"], "ans": "a large caravan which stays in one place", "exp": "معمولاً به کاروان‌های بزرگی گفته می‌شود که در یک جا ثابت می‌مانند و به عنوان خانه استفاده می‌شوند."},
+    {"q": "academic success", "opts": ["doing well in school/uni", "buying a new car", "winning a marathon"], "ans": "doing well in school/uni", "exp": "موفقیت تحصیلی مستقیماً به عملکرد در محیط‌های آموزشی اشاره دارد."}
+]
+
+# --- UI COMPONENTS ---
+
+def render_status_bar():
+    st.markdown(f"""
+    <div class="status-bar">
+        <div class="status-item">⏱️ TIME: 09:57</div>
+        <div class="status-item" style="font-size:1.5rem; color:#fff;">PENCRAFT UNIVERSE</div>
+        <div class="status-item">🏆 SCORE: {st.session_state.score} | ✨ XP: {st.session_state.xp}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- PAGE: LOBBY ---
+if st.session_state.page == "lobby":
+    st.markdown("<div class='hero-title'>PENCRAFT</div>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; font-size:1.2rem; color:#aaa; margin-bottom:50px;'>SELECT YOUR MISSION TO MASTER WRITING</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("<div class='lobby-card'><h3>🔍 Paraphrase Pro</h3><p>Master the art of rewording</p></div>", unsafe_allow_html=True)
+        if st.button("START MISSION", key="g1"): go_to_game("paraphrase")
+        
+    with col2:
+        st.markdown("<div class='lobby-card'><h3>💎 Key Words</h3><p>Perfect your collocations</p></div>", unsafe_allow_html=True)
+        if st.button("START MISSION", key="g2"): go_to_game("keywords")
+        
+    with col3:
+        st.markdown("<div class='lobby-card'><h3>🎩 Formal Upgrade</h3><p>Level up your register</p></div>", unsafe_allow_html=True)
+        if st.button("START MISSION", key="g3"): go_to_game("formal")
+
+# --- PAGE: KEY WORDS GAME (The one you highlighted) ---
+elif st.session_state.page == "keywords":
+    render_status_bar()
+    
+    data = keywords_data[st.session_state.q_idx % len(keywords_data)]
+    
+    st.markdown(f"""
+    <div class="q-card">
+        <div style="color:#00d4ff; font-weight:bold; margin-bottom:10px;">MISSION: VOCABULARY PRECISION</div>
+        <div class="q-text">{data['q']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    cols = st.columns(3)
+    for i, opt in enumerate(data['opts']):
+        if cols[i].button(opt, key=f"btn_{i}"):
+            if opt == data['ans']:
+                st.session_state.feedback = "correct"
+                st.session_state.score += 10
+                st.session_state.xp += 5
+            else:
+                st.session_state.feedback = "wrong"
+    
+    if st.session_state.feedback:
+        if st.session_state.feedback == "correct":
+            st.success("🎯 EXCELLENT! +10 Score")
+        else:
+            st.error(f"❌ INCORRECT. The answer was: {data['ans']}")
+            
+        st.markdown(f"<div class='analysis-panel'><b>تحلیل تخصصی:</b><br>{data['exp']}</div>", unsafe_allow_html=True)
+        
+        if st.button("NEXT QUESTION ➡️"):
+            st.session_state.q_idx += 1
+            st.session_state.feedback = None
+            st.rerun()
+
+    if st.button("⬅️ ABORT MISSION (Back to Lobby)"):
+        back_to_lobby()
         st.rerun()
 
-# --- MAIN GAME LOGIC ---
-
-st.markdown(f"<h1>{game_choice}</h1>", unsafe_allow_html=True)
-
-# 1. PARAPHRASE PRO
-if game_choice == "Paraphrase Pro":
-    db = paraphrase_db
-    idx = st.session_state.game_index % len(db)
-    item = db[idx]
-    
-    st.markdown(f"""<div class='game-card'>
-        <div class='skill-badge'>Skill: Academic Reformulation</div>
-        <h3>Original Sentence:</h3>
-        <p style='font-size:1.2rem; color:#555;'>"{item['original']}"</p>
-    </div>""", unsafe_allow_html=True)
-    
-    st.subheader("High-Level Paraphrase Options:")
-    for opt in item['options']:
-        # Highlight logic (simplified for display)
-        highlighted_opt = opt.replace("Allocating", "<span class='highlight'>Allocating</span>")\
-                             .replace("investment", "<span class='highlight'>investment</span>")\
-                             .replace("enhance", "<span class='highlight'>enhance</span>")\
-                             .replace("pollutant", "<span class='highlight'>pollutant</span>")
-        st.markdown(f"- {highlighted_opt}", unsafe_allow_html=True)
-    
-    if st.button("Show Deep Analysis (Persian)"):
-        st.session_state.show_analysis = True
-    
-    if st.session_state.show_analysis:
-        st.markdown(f"<div class='analysis-box'><b>تحلیل تخصصی:</b><br>{item['analysis']}</div>", unsafe_allow_html=True)
-        if st.button("Next Sentence"):
-            next_question()
-            st.rerun()
-
-# 2. KEY WORDS FOR FLUENCY
-elif game_choice == "Key Words for Fluency":
-    db = keywords_db
-    idx = st.session_state.game_index % len(db)
-    item = db[idx]
-    
-    st.markdown(f"""<div class='game-card'>
-        <div class='skill-badge'>Skill: {item['tag']}</div>
-        <h3>Keyword: <span style='color:#d4af37;'>{item['keyword']}</span></h3>
-        <p style='font-size:1.2rem;'>{item['sentence']}</p>
-    </div>""", unsafe_allow_html=True)
-    
-    cols = st.columns(2)
-    for i, opt in enumerate(item['options']):
-        if cols[i%2].button(opt, key=f"opt_{i}"):
-            if opt == item['answer']:
-                st.session_state.feedback = ("correct", item['explanation'])
-            else:
-                st.session_state.feedback = ("wrong", item['explanation'])
-    
-    if st.session_state.feedback:
-        status, msg = st.session_state.feedback
-        if status == "correct":
-            st.markdown(f"<div class='feedback-correct'>✅ <b>Correct!</b> {msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='feedback-wrong'>❌ <b>Try Again.</b> The correct answer was <b>{item['answer']}</b>. <br>{msg}</div>", unsafe_allow_html=True)
-        
-        if st.button("Next Challenge"):
-            next_question()
-            st.rerun()
-
-# 3. FORMAL UPGRADE
-elif game_choice == "Formal Upgrade":
-    db = formal_upgrade_db
-    idx = st.session_state.game_index % len(db)
-    item = db[idx]
-    
-    st.markdown(f"""<div class='game-card'>
-        <div class='skill-badge'>Skill: {item['tag']}</div>
-        <h3>Upgrade the Highlighted Part:</h3>
-        <p style='font-size:1.3rem;'>{item['sentence']}</p>
-    </div>""", unsafe_allow_html=True)
-    
-    cols = st.columns(2)
-    for i, opt in enumerate(item['options']):
-        if cols[i%2].button(opt, key=f"formal_{i}"):
-            if opt == item['answer']:
-                st.session_state.feedback = ("correct", item['explanation'])
-            else:
-                st.session_state.feedback = ("wrong", item['explanation'])
-                
-    if st.session_state.feedback:
-        status, msg = st.session_state.feedback
-        if status == "correct":
-            st.markdown(f"<div class='feedback-correct'>🔥 <b>Great Upgrade!</b> {msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='feedback-wrong'>💡 <b>Better Choice:</b> {item['answer']}. <br>{msg}</div>", unsafe_allow_html=True)
-        
-        if st.button("Next Upgrade"):
-            next_question()
-            st.rerun()
-
-# 4. ERROR HUNT
-elif game_choice == "Error Hunt":
-    db = error_hunt_db
-    idx = st.session_state.game_index % len(db)
-    item = db[idx]
-    
-    st.markdown(f"""<div class='game-card'>
-        <div class='skill-badge'>Skill: {item['tag']}</div>
-        <h3>Find the Best Correction:</h3>
-        <p style='font-size:1.2rem; color:#d90429;'>Original: "{item['original']}"</p>
-    </div>""", unsafe_allow_html=True)
-    
-    for i, opt in enumerate(item['options']):
-        if st.button(opt, key=f"error_{i}"):
-            if opt == item['answer']:
-                st.session_state.feedback = ("correct", item['explanation'])
-            else:
-                st.session_state.feedback = ("wrong", item['explanation'])
-                
-    if st.session_state.feedback:
-        status, msg = st.session_state.feedback
-        if status == "correct":
-            st.markdown(f"<div class='feedback-correct'>🎯 <b>Target Spotted!</b> {msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='feedback-wrong'>❌ <b>Missed it.</b> The correct version is: <b>{item['answer']}</b>. <br>{msg}</div>", unsafe_allow_html=True)
-        
-        if st.button("Next Hunt"):
-            next_question()
-            st.rerun()
-
-# 5. MICRO EXPAND
-elif game_choice == "Micro Expand":
-    db = micro_expand_db
-    idx = st.session_state.game_index % len(db)
-    item = db[idx]
-    
-    st.markdown(f"""<div class='game-card'>
-        <div class='skill-badge'>Skill: {item['tag']}</div>
-        <h3>Base Idea: <br><b>{item['base']}</b></h3>
-        <p style='color:#666;'>Task: {item['task']}</p>
-    </div>""", unsafe_allow_html=True)
-    
-    for i, opt in enumerate(item['options']):
-        if st.button(opt, key=f"expand_{i}"):
-            if opt == item['answer']:
-                st.session_state.feedback = ("correct", item['explanation'])
-            else:
-                st.session_state.feedback = ("wrong", item['explanation'])
-                
-    if st.session_state.feedback:
-        status, msg = st.session_state.feedback
-        if status == "correct":
-            st.markdown(f"<div class='feedback-correct'>🚀 <b>Excellent Expansion!</b> {msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='feedback-wrong'>🧐 <b>Not quite.</b> A better development would be: <i>{item['answer']}</i>. <br>{msg}</div>", unsafe_allow_html=True)
-        
-        if st.button("Next Expansion"):
-            next_question()
-            st.rerun()
-
-# --- FOOTER ---
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #999;'>Pencraft v1.5 | Powered by GPT-5.5 Logic</p>", unsafe_allow_html=True)
+# --- OTHER PAGES (Placeholders with same Style) ---
+else:
+    render_status_bar()
+    st.warning(f"The {st.session_state.page} mission is being calibrated...")
+    if st.button("Back to Lobby"):
+        back_to_lobby()
+        st.rerun()
